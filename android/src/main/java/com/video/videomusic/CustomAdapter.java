@@ -12,7 +12,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.video.videomusic.videomusicbackground.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

@@ -5,14 +5,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
@@ -25,7 +28,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import com.arthenica.mobileffmpeg.Config;
 import com.arthenica.mobileffmpeg.FFmpeg;
 import com.getcapacitor.JSObject;
-import com.video.videomusic.videomusicbackground.R;
 
 import org.json.JSONException;
 
@@ -73,15 +77,16 @@ public class MainActivity extends Activity {
     TextView countDown;
     static int duration = 30000;
     ImageButton userBack;
+    boolean isBackPress = false;
+
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         recording = false;
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_music_background);
 
         //Get Camera for preview
 
@@ -100,6 +105,34 @@ public class MainActivity extends Activity {
         }else{
             initCamera();
         }
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            finish();
+        }
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        isBackPress = true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(isBackPress){
+            JSObject res = new JSObject();
+            try {
+                res.putSafe("data","USER_CANCEL");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            VideoBackgroundMusic.returnResponse(res,false,context);
+        }
+        isSelectedMusic = false;
     }
 
     Button.OnClickListener myButtonOnClickListener
@@ -175,7 +208,7 @@ public class MainActivity extends Activity {
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_480P));
+        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
         mediaRecorder.setOutputFile(tempPath);
 
         timer = new CountDownTimer(duration, 1000) {
@@ -487,6 +520,7 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
                 VideoBackgroundMusic.returnResponse(res,false,context);
+                finish();
             }
         });
 
