@@ -273,7 +273,6 @@ public class MusicGallery extends AppCompatActivity {
             mediaPlayer = new MediaPlayer();
             mediaPlayer = MediaPlayer.create(context, Uri.parse(file_url));
             MainActivity.duration = mediaPlayer.getDuration() + 2000;
-            System.out.println(mediaPlayer.getDuration() + " aaaaaaaaaaaaaaa ");
             dialog.hide();
             dialog = null;
             finish();
