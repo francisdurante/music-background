@@ -362,7 +362,7 @@ public class MainActivity extends Activity {
             String commandMergeMusicToVideo;
             String commandCorrectMirrorEffect;
             String tempOutput = tempGetFile().getAbsolutePath();
-            commandMergeMusicToVideo = "-i " + videoInput + " -i " + audioInput + " -vcodec copy -acodec copy -map 0:0 -map 1:0  -shortest " + tempOutput;
+            //commandMergeMusicToVideo = "-i " + videoInput + " -i " + audioInput + " -vcodec copy -acodec copy -map 0:0 -map 1:0  -shortest " + tempOutput;
             if (executeCMD(commandMergeMusicToVideo)) {
                 if (cameraUsing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                     commandCorrectMirrorEffect = "-i " + tempOutput + " -qscale 0 -vf transpose=3,transpose=2 " + output;
