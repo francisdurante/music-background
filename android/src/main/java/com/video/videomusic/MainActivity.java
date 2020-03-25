@@ -357,34 +357,9 @@ public class MainActivity extends Activity {
     }
 
     public String addMusic(String videoInput, String audioInput, String output, Context context) {
-        String path = "";
-        if (isSelectedMusic) {
-            String commandMergeMusicToVideo;
-            String commandCorrectMirrorEffect;
-            String tempOutput = tempGetFile().getAbsolutePath();
-            //commandMergeMusicToVideo = "-i " + videoInput + " -i " + audioInput + " -vcodec copy -acodec copy -map 0:0 -map 1:0  -shortest " + tempOutput;
-            if (executeCMD(commandMergeMusicToVideo)) {
-                if (cameraUsing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    commandCorrectMirrorEffect = "-i " + tempOutput + " -qscale 0 -vf transpose=3,transpose=2 " + output;
-                } else {
-                    commandCorrectMirrorEffect = "-i " + tempOutput + " -qscale 0 " + output;
-                }
-                if (executeCMD(commandCorrectMirrorEffect)) {
-                    path = output;
-                }
-            }
-        } else {
-            String toCorrectMirrorEffect;
-            if (cameraUsing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                toCorrectMirrorEffect = "-i " + videoInput + " -qscale 0 -vf transpose=3,transpose=2 " + output;
-            } else {
-                toCorrectMirrorEffect = "-i " + videoInput + " -qscale 0 " + output;
-            }
-            if (executeCMD(toCorrectMirrorEffect)) {
-                path = output;
-            }
-        }
-        return path;
+	   File goodQuality = getGoodQualityVideo(videoInput);
+//        File watermarkedVideo = putWatermark(goodQuality);
+		return addMusic(goodQuality,audioInput,output);
     }
 
     private boolean executeCMD(String cmd){
@@ -669,5 +644,57 @@ public class MainActivity extends Activity {
         @Override
         protected void onProgressUpdate(Void... values) {
         }
+    }
+	
+	File getGoodQualityVideo(String videoInput){
+        File goodQualityVideoFolder = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + getPackageName() + "/cache");
+        File goodQualityVideo = new File(goodQualityVideoFolder,"temp_good_quality.mp4");
+        if(goodQualityVideo.exists()){
+            goodQualityVideo.delete();
+        }
+        String command;
+       if(cameraUsing == Camera.CameraInfo.CAMERA_FACING_FRONT){
+           command = "-i " + videoInput + " -qscale 0 -vf transpose=3,transpose=2 " + goodQualityVideo.getAbsolutePath();
+       }else{
+           command = "-i " + videoInput + " -qscale 0 " + goodQualityVideo.getAbsolutePath();
+       }
+       if(executeCMD(command)){
+           return goodQualityVideo;
+       }else{
+           return null;
+       }
+    }
+
+    File putWatermark(File videoInput){
+        final String watermark = Environment.getExternalStorageDirectory() + "/Android/data/" + getPackageName() + "/cache/watermark.png";
+        File goodQualityVideoFolder = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + getPackageName() + "/cache");
+        File watermarkedVideo = new File(goodQualityVideoFolder,"temp_watermarked_video.mp4");
+        if(watermarkedVideo.exists()){
+            watermarkedVideo.delete();
+        }
+        String command = "-i " + videoInput.getAbsolutePath() + " -i " + watermark + " -filter_complex  'overlay=x=(main_w-overlay_w):y=(main_h-overlay_h)' " + watermarkedVideo.getAbsolutePath();
+        if(executeCMD(command)){
+            if(videoInput.exists()) videoInput.delete();
+            return watermarkedVideo;
+        }else{
+            return null;
+        }
+    }
+
+    String addMusic(File videoInput,String audioInput, String finalOutput){
+        String path = "";
+        if(isSelectedMusic){
+            String command =  "-i " + videoInput.getAbsolutePath() + " -i " + audioInput + " -vcodec copy -acodec copy -map 0:0 -map 1:0  -shortest " + finalOutput;
+            if(executeCMD(command)){
+                if(videoInput.exists()) videoInput.delete();
+                path = finalOutput;
+            }
+        }else{
+            String command = "-i " + videoInput + " -qscale 0 " + finalOutput;
+            if(executeCMD(command)){
+                path = finalOutput;
+            }
+        }
+        return path;
     }
 }
