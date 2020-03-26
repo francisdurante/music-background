@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     private MediaRecorder mediaRecorder;
     public static int orientation;
     ImageButton myButton;
+    ImageButton recordBg;
     SurfaceHolder surfaceHolder;
     boolean recording;
     String tempPath = "";
@@ -77,15 +78,15 @@ public class MainActivity extends Activity {
     static int duration = 32000;
     ImageButton userBack;
     Animation animation;
+    boolean isBackPress = false;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         recording = false;
-
-        setContentView(R.layout.activity_main);
+        List<String> externalLibraries = Config.getExternalLibraries();
+        setContentView(R.layout.activity_main_music_background);
 
         //Get Camera for preview
 
@@ -115,7 +116,7 @@ public class MainActivity extends Activity {
                 stopRecording();
             }else{
 //                    releaseCamera();
-                v.startAnimation(animation);
+                recordBg.startAnimation(animation);
                 if(!prepareMediaRecorder()){
                     Toast.makeText(MainActivity.this,
                             "Fail in prepareMediaRecorder()!\n - Ended -",
@@ -179,7 +180,7 @@ public class MainActivity extends Activity {
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
-        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_480P));
+        mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_720P));
         mediaRecorder.setOutputFile(tempPath);
 
         timer = new CountDownTimer(duration, 1000) {
@@ -212,10 +213,36 @@ public class MainActivity extends Activity {
         initCamera();
     }
     @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            finish();
+        }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(isBackPress){
+            JSObject res = new JSObject();
+            try {
+                res.putSafe("data","USER_CANCEL");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            VideoBackgroundMusic.returnResponse(res,false,context);
+        }
+        isSelectedMusic = false;
+    }
+    @Override
     protected void onPause() {
         super.onPause();
         releaseMediaRecorder();       // if you are using MediaRecorder, release it first
         releaseCamera();              // release the camera immediately on pause event
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        isBackPress = true;
     }
 
     private void releaseMediaRecorder(){
@@ -357,9 +384,8 @@ public class MainActivity extends Activity {
     }
 
     public String addMusic(String videoInput, String audioInput, String output, Context context) {
-	   File goodQuality = getGoodQualityVideo(videoInput);
-//        File watermarkedVideo = putWatermark(goodQuality);
-		return addMusic(goodQuality,audioInput,output);
+        File goodQuality = getGoodQualityVideo(videoInput);
+        return addMusic(goodQuality,audioInput,output);
     }
 
     private boolean executeCMD(String cmd){
@@ -419,6 +445,8 @@ public class MainActivity extends Activity {
 
         myButton = (ImageButton) findViewById(R.id.record);
         myButton.setOnClickListener(myButtonOnClickListener);
+
+        recordBg = findViewById(R.id.record_bg);
 
         flipCamera = (ImageButton) findViewById(R.id.flip);
         flipCamera.setOnClickListener(flipCameraOnClick);
@@ -482,7 +510,7 @@ public class MainActivity extends Activity {
 
     public void stopRecording(){
         // stop recording and release camera
-        myButton.clearAnimation();
+        recordBg.clearAnimation();
         mediaRecorder.stop();  // stop the recording
         if(mediaPlayer != null) {
             mediaPlayer.stop();
@@ -645,24 +673,14 @@ public class MainActivity extends Activity {
         protected void onProgressUpdate(Void... values) {
         }
     }
-	
-	File getGoodQualityVideo(String videoInput){
+
+    File getGoodQualityVideo(String videoInput){
         File goodQualityVideoFolder = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + getPackageName() + "/cache");
         File goodQualityVideo = new File(goodQualityVideoFolder,"temp_good_quality.mp4");
         if(goodQualityVideo.exists()){
             goodQualityVideo.delete();
         }
-        String command;
-       if(cameraUsing == Camera.CameraInfo.CAMERA_FACING_FRONT){
-           command = "-i " + videoInput + " -qscale 0 -vf transpose=3,transpose=2 " + goodQualityVideo.getAbsolutePath();
-       }else{
-           command = "-i " + videoInput + " -qscale 0 " + goodQualityVideo.getAbsolutePath();
-       }
-       if(executeCMD(command)){
-           return goodQualityVideo;
-       }else{
-           return null;
-       }
+        return new File(videoInput);
     }
 
     File putWatermark(File videoInput){
@@ -690,10 +708,7 @@ public class MainActivity extends Activity {
                 path = finalOutput;
             }
         }else{
-            String command = "-i " + videoInput + " -qscale 0 " + finalOutput;
-            if(executeCMD(command)){
-                path = finalOutput;
-            }
+            path = videoInput.getAbsolutePath();
         }
         return path;
     }

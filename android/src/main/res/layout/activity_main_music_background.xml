@@ -128,13 +128,27 @@
                android:layout_height="match_parent"
                android:layout_weight="1"
                android:paddingBottom="20sp">
-              <ImageButton
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:id="@+id/record"
-                  android:src="@drawable/ic_play_btn"
-                  android:adjustViewBounds="true"
-                  android:background="@null"/>
+               <FrameLayout
+                   android:orientation="vertical"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content">
+                  <ImageButton
+                      android:layout_gravity="center"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:id="@+id/record_bg"
+                      android:src="@drawable/ic_play_button_bg"
+                      android:adjustViewBounds="true"
+                      android:background="@null"/>
+                   <ImageButton
+                       android:layout_gravity="center"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:id="@+id/record"
+                       android:src="@drawable/ic_play_btn"
+                       android:adjustViewBounds="true"
+                       android:background="@null"/>
+               </FrameLayout>
            </LinearLayout>
            <LinearLayout
                android:layout_width="wrap_content"
