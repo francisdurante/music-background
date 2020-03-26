@@ -231,6 +231,8 @@ public class MainActivity extends Activity {
             }
             VideoBackgroundMusic.returnResponse(res,false,context);
         }
+        releaseMediaRecorder();       // if you are using MediaRecorder, release it first
+        releaseCamera();              // release the camera immediately on pause event
         isSelectedMusic = false;
     }
     @Override
@@ -246,7 +248,7 @@ public class MainActivity extends Activity {
     }
 
     private void releaseMediaRecorder(){
-        if (mediaRecorder != null) {
+        if (mediaRecorder != null && myCamera != null) {
             mediaRecorder.reset();   // clear recorder configuration
             mediaRecorder.release(); // release the recorder object
             mediaRecorder = new MediaRecorder();
@@ -427,7 +429,6 @@ public class MainActivity extends Activity {
     }
 
     private void initCamera(){
-        releaseCamera();
         animation = AnimationUtils.loadAnimation(context,R.anim.zoomin);
         myCamera = getCameraInstance();
         mediaRecorder = new MediaRecorder();
@@ -478,7 +479,7 @@ public class MainActivity extends Activity {
         musicGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!recording) startActivity(new Intent(context,MusicGallery.class));
+                if(!recording) startActivity(new Intent(context,MusicGallery.class)); finish();
             }
         });
         selectedMusic.setVisibility(View.GONE);
@@ -646,7 +647,7 @@ public class MainActivity extends Activity {
 
         public FFmpegBackground(Context context){
             this.context = context;
-             dialog = new Dialog(context);
+             this.dialog = new Dialog(context);
         }
         @Override
         protected String doInBackground(String... params) {
@@ -658,15 +659,15 @@ public class MainActivity extends Activity {
             Intent preview = new Intent(context,PreviewVideoActivity.class);
             preview.putExtra("path",result);
             startActivity(preview);
-            dialog.hide();
+            this.dialog.dismiss();
             recording = false;
         }
 
         @Override
         protected void onPreExecute() {
-            dialog.setContentView(R.layout.loading_layout);
-            dialog.setCancelable(false);
-            dialog.show();
+            this.dialog.setContentView(R.layout.loading_layout);
+            this.dialog.setCancelable(false);
+            this.dialog.show();
         }
 
         @Override

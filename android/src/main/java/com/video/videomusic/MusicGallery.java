@@ -1,8 +1,8 @@
 package com.video.videomusic;
 
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -40,13 +40,11 @@ import java.util.ArrayList;
 
 public class MusicGallery extends AppCompatActivity {
     Context context = this;
-    private ProgressDialog pDialog;
     public static final int progress_bar_type = 0;
     private GridView musicGridView;
     private GridView dubGridView;
     ImageView musicBack;
     TextView musicNext;
-    Dialog dialog;
 
     MediaPlayer mediaPlayer;
     JSONArray musics;
@@ -66,56 +64,60 @@ public class MusicGallery extends AppCompatActivity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN); //show the activity in full screen
         setContentView(R.layout.activity_music_gallery);
-        getMusic(null); // first load
+        try {
+            getMusic(null); // first load
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
     public void initiateMusic(JSONArray music, JSONArray dub)
     {
-        musicBack = findViewById(R.id.music_back);
-        musicBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        musicGridView = (GridView) findViewById(R.id.music_grid);
-        musicAdapter = new CustomAdapter(this, music,R.layout.music_details_list);
-        musicGridView.setAdapter(musicAdapter);
+        try {
+            musicBack = findViewById(R.id.music_back);
+            musicBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finish();
+                }
+            });
+            musicGridView = (GridView) findViewById(R.id.music_grid);
+            musicAdapter = new CustomAdapter(this, music, R.layout.music_details_list);
+            musicGridView.setAdapter(musicAdapter);
 
 
-        dubAdapter = new CustomAdapter(this, dub,R.layout.music_dub_details_list);
+            dubAdapter = new CustomAdapter(this, dub, R.layout.music_dub_details_list);
 
-        dubGridView = (GridView) findViewById(R.id.dubs_grid);
-        dubGridView.setAdapter(dubAdapter);
+            dubGridView = (GridView) findViewById(R.id.dubs_grid);
+            dubGridView.setAdapter(dubAdapter);
 
-        musicNext = findViewById(R.id.next_button);
-        musicNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog = new Dialog(context);
-                dialog.setTitle("Loading");
-                dialog.setContentView(R.layout.loading_layout);
-                dialog.setCancelable(false); // disable dismiss by tapping outside of the dialog
-                dialog.show();
-                new DownloadMusic().execute(MGselectedMusic);
-            }
-        });
-        musicAdapter.setMediaPlayer(new MediaPlayer());
-        dubAdapter.setMediaPlayer(new MediaPlayer());
+            musicNext = findViewById(R.id.next_button);
+            musicNext.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Dialog dialog = new Dialog(context);
+                    new DownloadMusic(dialog).execute(MGselectedMusic);
+                }
+            });
+            musicAdapter.setMediaPlayer(new MediaPlayer());
+            dubAdapter.setMediaPlayer(new MediaPlayer());
 
-        searchKey = findViewById(R.id.search_key);
-        searchBtn = findViewById(R.id.search_btn);
+            searchKey = findViewById(R.id.search_key);
+            searchBtn = findViewById(R.id.search_btn);
 
-        searchBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getMusic(searchKey.getText().toString());
-            }
-        });
+            searchBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getMusic(searchKey.getText().toString());
+                }
+            });
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
     public void getMusic(final String searchKey){
-        dialog = new Dialog(context);
+        final Dialog dialog = new Dialog(context);
         dialog.setTitle("Loading");
         dialog.setContentView(R.layout.loading_layout);
         dialog.setCancelable(false); // disable dismiss by tapping outside of the dialog
@@ -156,7 +158,7 @@ public class MusicGallery extends AppCompatActivity {
                                 musicsdub = new JSONArray(musicDub);
 
                                 initiateMusic(musics,musicsdub);
-                                dialog.hide();
+                                dialog.dismiss();
                             } else {
                                 Log.w("TEST", "Error getting documents.", task.getException());
                             }
@@ -191,8 +193,16 @@ public class MusicGallery extends AppCompatActivity {
     }
 
     class DownloadMusic extends AsyncTask<String, String, String>{
+        private Dialog dialog;
+        DownloadMusic(Dialog dialog){
+            this.dialog = dialog;
+        }
         protected void onPreExecute() {
             super.onPreExecute();
+            this.dialog.setTitle("Loading");
+            this.dialog.setContentView(R.layout.loading_layout);
+            this.dialog.setCancelable(false); // disable dismiss by tapping outside of the dialog
+            this.dialog.show();
         }
 
         /**
@@ -273,8 +283,9 @@ public class MusicGallery extends AppCompatActivity {
             mediaPlayer = new MediaPlayer();
             mediaPlayer = MediaPlayer.create(context, Uri.parse(file_url));
             MainActivity.duration = mediaPlayer.getDuration() + 2000;
-            dialog.hide();
-            dialog = null;
+            this.dialog.dismiss();
+            Intent intent = new Intent(context,MainActivity.class);
+            startActivity(intent);
             finish();
         }
     }
