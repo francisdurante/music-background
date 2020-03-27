@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -40,7 +41,6 @@ import java.util.ArrayList;
 
 public class MusicGallery extends AppCompatActivity {
     Context context = this;
-    public static final int progress_bar_type = 0;
     private GridView musicGridView;
     private GridView dubGridView;
     ImageView musicBack;
@@ -225,7 +225,7 @@ public class MusicGallery extends AppCompatActivity {
                 // Output stream
                 File music = new File(Environment.getExternalStorageDirectory() + "/Android/data/" + context.getPackageName() + "/music/");
                 if(!music.exists()){
-                    music.mkdir();
+                    music.mkdirs();
                 }
                 output = new FileOutputStream(Environment.getExternalStorageDirectory() + "/Android/data/" + context.getPackageName() + "/music/test_1.mp3");
 
@@ -270,20 +270,28 @@ public class MusicGallery extends AppCompatActivity {
          **/
         @Override
         protected void onPostExecute(String file_url) {
-            if(musicAdapter.getMediaPlayer()!= null){
-                musicAdapter.getMediaPlayer().stop();
-                musicAdapter.setMediaPlayer(null);
-            }if(dubAdapter.getMediaPlayer()!= null){
-                dubAdapter.getMediaPlayer().stop();
-                dubAdapter.setMediaPlayer(null);
+            try {
+                if (musicAdapter.getMediaPlayer() != null) {
+                    musicAdapter.getMediaPlayer().stop();
+                    musicAdapter.setMediaPlayer(null);
+                }
+                if (dubAdapter.getMediaPlayer() != null) {
+                    dubAdapter.getMediaPlayer().stop();
+                    dubAdapter.setMediaPlayer(null);
+                }
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer = MediaPlayer.create(context, Uri.parse(file_url));
+                MainActivity.duration = mediaPlayer.getDuration() + 2000;
+                this.dialog.dismiss();
+                Intent intent = new Intent(context, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }catch (Exception e){
+                Toast.makeText(context,e.getMessage(),Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(context, MainActivity.class);
+                startActivity(intent);
+                finish();
             }
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer = MediaPlayer.create(context, Uri.parse(file_url));
-            MainActivity.duration = mediaPlayer.getDuration() + 2000;
-            this.dialog.dismiss();
-            Intent intent = new Intent(context,MainActivity.class);
-            startActivity(intent);
-            finish();
         }
     }
 
