@@ -95,8 +95,7 @@ public class MusicGallery extends AppCompatActivity {
             musicNext.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Dialog dialog = new Dialog(context);
-                    new DownloadMusic(dialog).execute(MGselectedMusic);
+                    new DownloadMusic().execute(MGselectedMusic);
                 }
             });
             musicAdapter.setMediaPlayer(new MediaPlayer());
@@ -194,11 +193,9 @@ public class MusicGallery extends AppCompatActivity {
 
     class DownloadMusic extends AsyncTask<String, String, String>{
         private Dialog dialog;
-        DownloadMusic(Dialog dialog){
-            this.dialog = dialog;
-        }
         protected void onPreExecute() {
             super.onPreExecute();
+            this.dialog = new Dialog(context);
             this.dialog.setTitle("Loading");
             this.dialog.setContentView(R.layout.loading_layout);
             this.dialog.setCancelable(false); // disable dismiss by tapping outside of the dialog
