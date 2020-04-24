@@ -116,6 +116,7 @@ public class MainActivity extends Activity {
                 stopRecording();
             }else{
 //                    releaseCamera();
+                myButton.setImageResource(R.drawable.ic_stop_button_black_rounded_square);
                 recordBg.startAnimation(animation);
                 if(!prepareMediaRecorder()){
                     Toast.makeText(MainActivity.this,
@@ -512,6 +513,7 @@ public class MainActivity extends Activity {
     public void stopRecording(){
         // stop recording and release camera
         recordBg.clearAnimation();
+        myButton.setImageResource(R.drawable.ic_play_btn);
         mediaRecorder.stop();  // stop the recording
         if(mediaPlayer != null) {
             mediaPlayer.stop();
