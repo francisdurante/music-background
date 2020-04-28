@@ -47,14 +47,15 @@ public class MusicGallery extends AppCompatActivity {
     TextView musicNext;
 
     MediaPlayer mediaPlayer;
+    public static MediaPlayer allMediaPlayer;
     JSONArray musics;
     JSONArray musicsdub;
     static String MGselectedMusic;
     CustomAdapter musicAdapter;
     CustomAdapter dubAdapter;
-
     private EditText searchKey;
     private TextView searchBtn;
+    public static ImageView checkedImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +64,7 @@ public class MusicGallery extends AppCompatActivity {
         getSupportActionBar().hide(); //hide the title bar
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN); //show the activity in full screen
+        allMediaPlayer = new MediaPlayer();
         setContentView(R.layout.activity_music_gallery);
         try {
             getMusic(null); // first load
@@ -78,6 +80,10 @@ public class MusicGallery extends AppCompatActivity {
             musicBack.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(allMediaPlayer != null) allMediaPlayer.stop(); allMediaPlayer = null;
+                    MainActivity.isSelectedMusic = false;
+                    MainActivity.musicName = "";
+                    startActivity(new Intent(context,MainActivity.class));
                     finish();
                 }
             });
@@ -98,8 +104,8 @@ public class MusicGallery extends AppCompatActivity {
                     new DownloadMusic().execute(MGselectedMusic);
                 }
             });
-            musicAdapter.setMediaPlayer(new MediaPlayer());
-            dubAdapter.setMediaPlayer(new MediaPlayer());
+//            musicAdapter.setMediaPlayer(allMediaPlayer);
+//            dubAdapter.setMediaPlayer(allMediaPlayer);
 
             searchKey = findViewById(R.id.search_key);
             searchBtn = findViewById(R.id.search_btn);

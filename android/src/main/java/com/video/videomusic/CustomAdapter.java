@@ -19,6 +19,8 @@ import org.json.JSONObject;
 import static com.video.videomusic.MainActivity.isSelectedMusic;
 import static com.video.videomusic.MainActivity.musicName;
 import static com.video.videomusic.MusicGallery.MGselectedMusic;
+import static com.video.videomusic.MusicGallery.allMediaPlayer;
+import static com.video.videomusic.MusicGallery.checkedImageView;
 
 public class CustomAdapter extends BaseAdapter{
     private Context context;
@@ -27,7 +29,6 @@ public class CustomAdapter extends BaseAdapter{
     private int layoutToPut;
     private String selectedMusic;
     private MediaPlayer mediaPlayer;
-    private ImageView previousSelected;
 
     CustomAdapter(Context context, JSONArray musicData, int layoutToPut) {
         this.context = context;
@@ -89,7 +90,7 @@ public class CustomAdapter extends BaseAdapter{
     @Override
     public int getCount() {
         return 6;
-    }
+    } // 6 lang ididisplay
 
     @Override
     public Object getItem(int position) {
@@ -121,18 +122,18 @@ public class CustomAdapter extends BaseAdapter{
         }
         @Override
         public void onClick(View v) {
-            if(mediaPlayer != null) mediaPlayer.stop(); mediaPlayer = null;
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            if(allMediaPlayer != null) allMediaPlayer.stop(); allMediaPlayer = null;
+            allMediaPlayer = new MediaPlayer();
+            allMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             try {
-                if(previousSelected != null)  previousSelected.setVisibility(View.GONE);
-                previousSelected = check;
+                if(checkedImageView != null)  checkedImageView.setVisibility(View.GONE);
+                checkedImageView = check;
                 check.setVisibility(View.VISIBLE);
                 selectedMusic = musicLink;
                 MGselectedMusic = selectedMusic;
-                mediaPlayer.setDataSource(musicLink);
-                mediaPlayer.prepare();
-                mediaPlayer.start();
+                allMediaPlayer.setDataSource(musicLink);
+                allMediaPlayer.prepare();
+                allMediaPlayer.start();
                 isSelectedMusic = true;
                 musicName = name;
             } catch (Exception e) {
